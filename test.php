@@ -4,29 +4,19 @@ require_once('class.php');
 
 class PokemonTest extends PHPUnit_Framework_TestCase {
 
- public function setUp() {
-	 $this->pikachu = new Pikachu('TestPika');
-	 $this->salameche = new Salameche('TestSala');
-	 $this->carapuce = new Carapuce('TestCara');
- }
-
- public function testConstruct() {
-	 $this->assertEquals('TestPika', $this->pikachu->nom);
-	 $this->assertEquals(1, $this->pikachu->niveau);
- }
-
-}
-
-class PokemonTest extends PHPUnit_Framework_TestCase {
-
 	public function setUp() {
-		$this->salameche = new Salameche('TestSala');
-		$this->carapuce= new Carapuce('TestCara');
-		$combat = new Combat($this->salameche, $this->carapuce);
-
+		 $this->pikachu = new Pikachu('TestPika');
+		 $this->salameche = new Salameche('TestSala');
+		 $this->carapuce = new Carapuce('TestCara');
+		 $this->combat = new Combat($this->salameche, $this->carapuce);
 	}
 
-	public function testConstruct() {
+	public function testConstructPokemon() {
+			$this->assertEquals('TestPika', $this->pikachu->nom);
+			$this->assertEquals(1, $this->pikachu->niveau);
+	}
+
+	public function testConstructCombat() {
 		$this->assertContains($this->salameche, $this->combat->adversaires);
 		$this->assertCount(2, $this->combat->adversaires);
 		$this->assertEquals(Combat::STATUT_DEBUT, $this->combat->statut);
@@ -65,5 +55,14 @@ class PokemonTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(0, $this->salameche->pv);
 		$this->assertEquals(275, $this->carapuce->pv);
 		$this->assertEquals(Combat::STATUT_FIN, $this->combat->statut);
+		return $combat;
+	}
+
+	/**
+	*@depends testMort
+	*@expectedException Exception
+	*/
+	public function testFin() {
+		$combat->round();
 	}
 }
