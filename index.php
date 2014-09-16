@@ -37,6 +37,21 @@ function creer($famille, $nom, $id) {
     }
 }
 
+/**
+ * @route /form
+ * @view /views/former.html
+ */
+function former($id) {
+    global $request;
+    $form = new CreateForm('', 'post');
+    if(count($request->getParams()) && $form->validate($request->getParams())) {
+        return 'Vous avez créé '.$form->nom.' de la famille '.$form->famille;
+        header('Location: /pokemon/creer/'.$form->famille.'/'.$form->nom.'/'.$id);
+        die();
+    }
+    return array('form' => $form);
+}
+
 define('APPLICATION_PATH', realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR);
 
 require_once('bottle/bottle.php');
