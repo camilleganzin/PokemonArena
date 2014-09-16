@@ -1,3 +1,6 @@
 [submodule "bottle"]
 	path = bottle
 	url = https://github.com/gordon-/php-bottle
+[submodule "former"]
+	path = former
+	url = https://github.com/gordon-/Former
