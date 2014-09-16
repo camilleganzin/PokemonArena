@@ -1,20 +1,40 @@
 <?php
 
-/**
-*@route /
-*@view /views/index.html
-*/
+require_once('init.php');
 
+/**
+ * @route /
+ * @view /views/index.html
+ */
 function index() {
-	return array('nom' => 'PokemonArena');
+    //$pika = new Carapuce('Pikaaa');
+    $pokemons = $_SESSION['pokemons'];
+    return array('pokemons' => $pokemons);
 }
 
 /**
-*@route /pokemon/:name
-*@view /views/pokemon.html
-*/
-function pokemon($name) {
-	return array('pokemon' => $name);
+ * @route /pokemon/:id/detail
+ * @view /views/detail.html
+ */
+function detail($id) {
+    if(isset($_SESSION['pokemons'][$id])) {
+        $pokemon = $_SESSION['pokemons'][$id];
+        return array('pokemon' => $pokemon);
+    }
+}
+
+/**
+ * @route /pokemon/creer/:famille/:nom/:id
+ * @todo supprimer cette action, elle n’est que temporaire !
+ */
+function creer($famille, $nom, $id) {
+    if(!isset($_SESSION['pokemons'][$id])) {
+        $pokemon = new $famille($nom);
+        $_SESSION['pokemons'][$id] = $pokemon;
+        return 'OK';
+    } else {
+        return 'DOUBLON';
+    }
 }
 
 define('APPLICATION_PATH', realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR);

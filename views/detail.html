@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8" />
+		<title>pokemon</title>
+	</head>
+	<body>
+    <p>Vous cherchez à afficher le pokémon <?= htmlspecialchars($pokemon->nom)
+    ?>, de la famille <?= $pokemon->famille ?></p>
+    <p><a href="<?= $this->url('index') ?>">Accueil</a></p>
+	</body>
+</html>
