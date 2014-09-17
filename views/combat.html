@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>combat</title>
+	</head>
+	<body>
+		<p>Combat entre <?= $combat->adversaires[0]->nom ?> (<?=
+		$combat->adversaires[0]->famille ?>) et <?= $combat->adversaires[1]->nom ?>
+		(<?= $combat->adversaires[1]->famille ?>)</p>
+		<?php if($combat->statut != Combat::STATUT_FIN) { ?>
+		<a href="<?= $this->url('combat_round') ?>">BASTOOOON !</a>
+		<?php } else { ?>
+		<p>Le combat est fini. <a href="<?= $this->url('index') ?>">Retour</a></p>
+		<?php } /* endif */ ?>
+		<h1>Journal de combat</h1>
+		<ul>
+		<?php foreach($combat->log as $log) { ?>
+		<li><?= $log ?></li>
+		<?php } /* endforeach */ ?>
+		</ul>
+	</body>
+</html>

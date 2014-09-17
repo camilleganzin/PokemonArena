@@ -1,6 +1,60 @@
+body {
+	background-color: #87E2B9;
+}
 
-
-body > section {
+body div {
 	display : inline-block;
 	margin-right: 1rem;
+}
+
+@font-face{
+    font-family : "Pokemon Solid";
+    src : url('PokemonSolid.ttf');
+}
+
+@font-face{
+    font-family : "Pokemon Hollow";
+    src : url('PokemonHollow.ttf');
+}
+
+h1 {
+	font-family: "Pokemon Hollow";
+	color: red;
+	text-align: center;
+}
+
+div {
+	width: 10rem;
+	margin-bottom: 5%;
+	text-align: center;
+	font-family: "Pokemon Hollow";
+	padding: 1rem;
+	border: solid yellow;
+}
+
+a {
+	color: green;
+	text-decoration: none;
+}
+
+#cartes, #more {
+	text-align: center;
+}
+
+.combat {
+	height: 30rem;
+	background-image: url('arene.jpg');
+}
+
+button {
+	border: solid yellow;
+	background-color: transparent;
+}
+
+.pokemon {
+	color : white;
+}
+
+.attaque {
+	border: solid red;
 }

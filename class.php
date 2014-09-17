@@ -1,6 +1,28 @@
 <?php
 
+class PokemonException extends Exception {}
+class PokemonInvalidBattleException extends PokemonException {}
+class PokemonBattleEndException extends PokemonException {}
+class PokemonUnfinishedBattleException extends PokemonException {}
+
+class Database {
+    private static $instance;
+    const PREFIX = 'rohajobu_';
+
+    private function __construct() {
+        }
+
+    static function getInstance() {
+        if(is_null(self::$instance)) {
+            self::$instance = new Predis\Client();
+        }
+            return self::$instance;
+    }
+}
+
 class Pokemon {
+    public $id;
+
     public $nom;
     public $famille;
     public $type;
@@ -12,12 +34,14 @@ class Pokemon {
     public $precision;
     public $niveau = 1;
     public $dernier_coup = null;
+    public $combattant = false;
+    protected $is_saved = true;
 
-    public $affinites = array('electrik' => array('electrik' => 1, 'eau' => 2, 'feu' => 1, 'plante' => 1, 'roche' => 0),
-                              'eau' => array('electrik' => 0.5, 'eau' => 0.5, 'feu' => 2, 'plante' => 0.5, 'roche' => 2),
-                              'feu' => array('electrik' => 1, 'eau' => 0.5, 'feu' => 0.5, 'plante' => 2, 'roche' => 0.5),
-                              'plante' => array('electrik' => 1, 'eau' => 2, 'feu' => 0,5, 'plante' => 0.5, 'roche' => 2),
-                              'roche' => array('electrik' => 2, 'eau' => 0.5, 'feu' => 1, 'plante' => 2, 'roche' => 1)
+    public $affinites = array('Electrik' => array('Electrik' => 1, 'Eau' => 2, 'Feu' => 1, 'Plante' => 1, 'Roche' => 0),
+                              'Eau' => array('Electrik' => 0.5, 'Eau' => 0.5, 'Feu' => 2, 'Plante' => 0.5, 'Roche' => 2),
+                              'Feu' => array('Electrik' => 1, 'Eau' => 0.5, 'Feu' => 0.5, 'Plante' => 2, 'Roche' => 0.5),
+                              'Plante' => array('Electrik' => 1, 'Eau' => 2, 'Feu' => 0,5, 'Plante' => 0.5, 'Roche' => 2),
+                              'Roche' => array('Electrik' => 2, 'Eau' => 0.5, 'Feu' => 1, 'Plante' => 2, 'Roche' => 1)
                              );
 
     const COUP_TOUCHE = 0;
@@ -29,9 +53,11 @@ class Pokemon {
     const COUP_CRIT_FAIBLE = 6;
 
     public function __construct($nom) {
+        $this->id = self::getUniqueId();
         $this->nom = $nom;
         $this->pvmax = $this->pv;
         $this->affinites = $this->affinites[$this->type];
+        $this->is_saved = false;
     }
 
     public function attaque($cible, $contre = false) {
@@ -71,11 +97,80 @@ class Pokemon {
         if($this->pv < 0) $this->pv = 0;
         return $log;
     }
+
+    static function getAll() {
+        $client = Database::getInstance();
+        $ids = $client->zrange(Database::PREFIX.'pokelist', 0, -1);
+        $pokemons = array();
+        foreach($ids as $id) {
+            $pokemons[$id] = self::get($id);
+        }
+        return $pokemons;
+    }
+
+    /**
+     * complexité : O(n)
+     * pour n valant le nombre total de pokémons
+     */
+    static function getFree() {
+        $pokemons = self::getAll();
+        $free = array();
+        foreach($pokemons as $pkmn) {
+            if(!$pkmn->combattant) {
+                $free[$pkmn->id] = $pkmn;
+            }
+        }
+        return $free;
+    }
+
+    static function get($id) {
+        $client = Database::getInstance();
+        $data = $client->hget(Database::PREFIX.'pokemons', $id);
+        if($data) {
+            $obj = unserialize($data);
+            return $obj;
+        } else {
+            return false;
+        }
+    }
+    
+    public function save() {
+        $data = serialize($this);
+        $client = Database::getInstance();
+        $client->hset(Database::PREFIX.'pokemons', $this->id, $data);
+        $client->zadd(Database::PREFIX.'pokelist', $this->id, $this->id);
+        if(!$this->is_saved) {
+            $client->set(Database::PREFIX.'pokeid', $this->id);
+            $this->is_saved = true;
+        }
+    }
+
+    public function delete() {
+        $client = Database::getInstance();
+        $client->hdel(Database::PREFIX.'pokemons', $this->id);
+        $client->zrem(Database::PREFIX.'pokelist', $this->id);
+    }
+    
+    public function getUniqueId() {
+        $client = Database::getInstance();
+        $max_id = $client->zrevrange(Database::PREFIX.'pokelist', 0, 0);
+        if(!count($max_id)) {
+            return 0;
+        }
+        return $max_id[0]+1;
+        $max_id = $client->get(Database::PREFIX.'pokeid');
+        if($max_id === null) {
+            return 0;
+        } else {
+            return $max_id + 1;
+        }
+    }
+
 }
 
 class Pikachu extends Pokemon {
     public $famille = 'Pikachu';
-    public $type = 'electrik';
+    public $type = 'Electrik';
     public $pv = 350;
     public $force = 55;
     public $defense = 40;
@@ -85,7 +180,7 @@ class Pikachu extends Pokemon {
 
 class Carapuce extends Pokemon {
     public $famille = 'Carapuce';
-    public $type = 'eau';
+    public $type = 'Eau';
     public $pv = 440;
     public $force = 48;
     public $defense = 55;
@@ -95,7 +190,7 @@ class Carapuce extends Pokemon {
 
 class Salameche extends Pokemon {
     public $famille = 'Salamèche';
-    public $type = 'feu';
+    public $type = 'Feu';
     public $pv = 390;
     public $force = 52;
     public $defense = 43;
@@ -105,6 +200,8 @@ class Salameche extends Pokemon {
 
 class Combat {
 
+    public $id;
+
     const STATUT_DEBUT = 0;
     const STATUT_ENCOURS = 1;
     const STATUT_FIN = 2;
@@ -113,11 +210,22 @@ class Combat {
     public $statut;
     public $log = array();
     public $precedents_logs = array();
+    protected $is_saved = true;
 
     public function __construct(Pokemon $pkmn1, Pokemon $pkmn2) {
+        $this->id = $this->getUniqueId();
+        if($pkmn1->combattant || $pkmn2->combattant) {
+            throw new PokemonInvalidBattleException('Un pokémon en combat ne peut pas en combattre un autre.');
+        }
         $this->statut = self::STATUT_DEBUT;
         $this->adversaires[] = $pkmn1;
         $this->adversaires[] = $pkmn2;
+        $pkmn1->combattant = true;
+        $pkmn2->combattant = true;
+        $pkmn1->save();
+        $pkmn2->save();
+        $this->is_saved = false;
+        $this->save();
     }
 
     public function round() {
@@ -126,6 +234,7 @@ class Combat {
         }
         $this->statut = self::STATUT_ENCOURS;
         $this->precedents_logs[] = $this->log;
+        $this->log = array();
         $pkmn1 = $this->adversaires[0];
         $pkmn2 = $this->adversaires[1];
         if($pkmn1->initiative < $pkmn2->initiative) {
@@ -141,6 +250,63 @@ class Combat {
         }
         if($pkmn1->pv <= 0 || $pkmn2->pv <= 0) {
             $this->statut = self::STATUT_FIN;
+            $pkmn1->combattant = false;
+            $pkmn2->combattant = false;
+            $this->save();
+        }
+        $pkmn1->save();
+        $pkmn2->save();
+    }
+
+    public function getUniqueId() {
+        $client = Database::getInstance();
+        $max_id = $client->get(Database::PREFIX.'combatid');
+        if($max_id === null) {
+            return 0;
+        } else {
+            return $max_id + 1;
+        }
+    }
+
+    static function getAll() {
+        $client = Database::getInstance();
+        $ids = $client->zrange(Database::PREFIX.'combatlist', 0, -1);
+        $combats = array();
+        foreach($ids as $id) {
+            $combats[$id] = self::get($id);
+        }
+        return $combats;
+    }
+
+    static function get($id) {
+        $client = Database::getInstance();
+        $data = $client->hget(Database::PREFIX.'combats', $id);
+        if($data) {
+            $obj = unserialize($data);
+            return $obj;
+        } else {
+            return false;
+        }
+    }
+
+    public function save() {
+        $data = serialize($this);
+        $client = Database::getInstance();
+        $client->hset(Database::PREFIX.'combats', $this->id, $data);
+        $client->zadd(Database::PREFIX.'combatlist', $this->id, $this->id);
+        if(!$this->is_saved) {
+            $client->set(Database::PREFIX.'combatid', $this->id);
+            $this->is_saved = true;
+        }
+    }
+
+    public function delete() {
+        if($this->statut == self::STATUT_FIN) {
+            $client = Database::getInstance();
+            $client->hdel(Database::PREFIX.'pokemons', $this->id);
+            $client->zrem(Database::PREFIX.'pokelist', $this->id);
+        } else {
+            throw new PokemonUnfinishedBattleException('Ce combat est en cours !');
         }
     }
 

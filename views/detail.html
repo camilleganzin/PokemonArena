@@ -5,8 +5,15 @@
 		<title>pokemon</title>
 	</head>
 	<body>
-    <p>Vous cherchez à afficher le pokémon <?= htmlspecialchars($pokemon->nom)
-    ?>, de la famille <?= $pokemon->famille ?></p>
+    <h2><?= htmlspecialchars($pokemon->nom)?></h2>
+    <p>Famille : <?= $pokemon->famille ?></p>
+    <p>Type : <?= $pokemon->type ?></p>
+    <p>PV : <?= $pokemon->pv ?></p>
+    <p>PV max : <?= $pokemon->pvmax ?></p>
+    <p>Force : <?= $pokemon->force ?></p>
+    <p>Defense : <?= $pokemon->defense ?></p>
+    <p>Initiative : <?= $pokemon->initiative ?></p>
+    <p>Précision : <?= $pokemon->precision ?></p> 
     <p><a href="<?= $this->url('index') ?>">Accueil</a></p>
 	</body>
 </html>

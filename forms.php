@@ -21,3 +21,14 @@ class CreateForm extends Former {
 	public $famille;
 
 }
+
+/**
+* @Submit(value='Supprimer')
+*/
+class SuppForm extends Former {
+
+	/**
+	* @InputField()
+	*/
+	public $id;
+}

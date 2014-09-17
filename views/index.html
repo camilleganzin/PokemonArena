@@ -1,15 +1,20 @@
-<!DOCTYPE html>
-<html>
-	<head>
-        <meta charset="utf-8" />
-		<title>index</title>
-	</head>
-	<body>
-        <h1>Liste des pokémons</h1>
-        <?php foreach($pokemons as $id => $pokemon) { ?>
-        <div>
-            <h2><a href="<?= $this->url('detail', ['id'=>$id]) ?>"><?= $pokemon->nom ?></a></h2>
-        </div>
-        <?php } ?>
-	</body>
-</html>
+<?php $titre = 'Liste des pokémon'; include('header.html'); ?>
+        <section id="cartes"> 
+            <?php foreach($pokemons as $id => $pokemon) { ?>
+            <div data-type="pokemon" data-id="<?= $id ?>" data-nom="<?= $pokemon->nom ?>">
+                <h2><a href="<?= $this->url('detail', ['id'=>$id]) ?>"><?= $pokemon->nom ?></a> <a href="<?= $this->url('supprimer', array('id' => $pokemon->id)) ?>">×</a>
+                    <?php if($pokemon->id !== $selection) { ?>
+                    <a href="<?=$this->url('choix', array('id' => $pokemon->id)) ?>">Choisir</a>
+                    <?php } /* endif */?>
+                </h2>
+            </div>
+            <?php } ?>
+        </section>
+        <section id="more">
+            <div><a href="<?= $this->url('form') ?>">Ajouter un pokémon</a></div>
+        </section>
+        <section id="arene">
+            <button id="fight">Fight</button>
+        </section>
+        <?php include('footer.html'); ?>
+
